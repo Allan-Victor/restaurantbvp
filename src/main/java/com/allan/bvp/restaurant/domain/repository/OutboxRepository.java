@@ -8,10 +8,15 @@ import java.util.UUID;
 
 /**
  * Repository interface for managing {@link OutboxEvent} persistence.
+ *
+ * <p>Junior Tip:</p>
+ * This is the "Data Access Object" (DAO) for our Outbox "To-Do" list.
+ * Spring Data JPA automatically provides common methods like {@code save()} and {@code findById()}.
  */
 public interface OutboxRepository extends JpaRepository<OutboxEvent, UUID> {
     /**
-     * Finds all events that haven't been dispatched yet, ordered by creation time.
+     * Finds all events that haven't been sent yet.
+     * We order by creation time to ensure we send events in the order they happened.
      *
      * @return a list of undispatched outbox events
      */

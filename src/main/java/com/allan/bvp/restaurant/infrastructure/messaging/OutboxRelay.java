@@ -12,9 +12,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Periodically polls the OUTBOX_EVENT table for undispatched events
- * and publishes them to the Spring ApplicationEventPublisher.
- * This implements the Transactional Outbox pattern relay.
+ * The OutboxRelay is a critical component of the Transactional Outbox pattern.
+ *
+ * <p>Why we use this:</p>
+ * When a business operation happens (e.g., an order is placed), we need to do two things:
+ * 1. Update the database (Order table).
+ * 2. Notify other parts of the system (e.g., Inventory, Kitchen).
+ *
+ * <p>The Problem:</p>
+ * If we update the DB but the notification fails (network issue), the system is inconsistent.
+ * If we send the notification but the DB transaction fails, the system is also inconsistent.
+ *
+ * <p>The Solution (Transactional Outbox):</p>
+ * Instead of sending the notification directly, we save the event into an "OUTBOX_EVENT" table
+ * within the SAME database transaction as the business operation.
+ * This class (OutboxRelay) then periodically polls that table and "relays" the events
+ * to their destination (in this case, an in-process event bus).
  */
 @Component
 @RequiredArgsConstructor
@@ -25,8 +38,14 @@ public class OutboxRelay {
     private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * Polls for undispatched events and relays them.
-     * Fixed delay is set to 1 second.
+     * This method runs periodically to find events that haven't been dispatched yet.
+     * It is scheduled to run every 1 second (fixedDelay = 1000ms).
+     *
+     * <p>How it works:</p>
+     * 1. Fetch undispatched events from the database.
+     * 2. For each event, publish it to the Spring ApplicationEventPublisher.
+     * 3. If publishing succeeds, mark the event as dispatched=true.
+     * 4. If publishing fails, leave it as dispatched=false so it can be retried in the next run.
      */
     @Scheduled(fixedDelay = 1000)
     @Transactional
