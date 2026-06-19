@@ -52,7 +52,7 @@ CREATE TABLE STOCK_MOVEMENT (
     qty_minor BIGINT NOT NULL,
     idempotency_key TEXT NOT NULL,
     source_event UUID,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_stock_movement_idempotency UNIQUE (venue_id, stock_item_id, idempotency_key)
 );
 
