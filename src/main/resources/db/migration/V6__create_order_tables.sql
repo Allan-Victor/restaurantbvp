@@ -1,0 +1,16 @@
+-- V5__create_order_tables.sql
+CREATE TABLE ORDERS (
+    id UUID PRIMARY KEY,
+    venue_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE ORDER_ITEM (
+    id UUID PRIMARY KEY,
+    order_id UUID NOT NULL REFERENCES ORDERS(id),
+    menu_item_id UUID NOT NULL REFERENCES MENU_ITEM(id),
+    quantity INT NOT NULL,
+    idempotency_key TEXT NOT NULL UNIQUE
+);

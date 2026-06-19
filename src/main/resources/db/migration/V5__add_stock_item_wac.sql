@@ -1,0 +1,1 @@
+ALTER TABLE STOCK_ITEM ADD COLUMN weighted_average_cost_minor BIGINT NOT NULL DEFAULT 0;
