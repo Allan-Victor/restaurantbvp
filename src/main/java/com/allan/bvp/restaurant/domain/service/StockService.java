@@ -226,6 +226,7 @@ public class StockService {
         try {
             // StockLevelChanged event
             OutboxEvent stockEvent = OutboxEvent.builder()
+                    .venueId(stockItem.getVenueId())
                     .eventType("StockLevelChanged")
                     .payload(objectMapper.writeValueAsString(stockItem))
                     .build();
@@ -237,6 +238,7 @@ public class StockService {
             // ParLevelBreached event if applicable
             if (stockItem.getOnHandMinor() < stockItem.getParLevelMinor()) {
                 OutboxEvent parEvent = OutboxEvent.builder()
+                        .venueId(stockItem.getVenueId())
                         .eventType("ParLevelBreached")
                         .payload(objectMapper.writeValueAsString(stockItem))
                         .build();

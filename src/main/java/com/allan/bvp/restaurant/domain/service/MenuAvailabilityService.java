@@ -169,6 +169,7 @@ public class MenuAvailabilityService {
 
         try {
             OutboxEvent event = OutboxEvent.builder()
+                    .venueId(availability.getMenuItem().getVenueId())
                     .eventType(eventType)
                     .payload(objectMapper.writeValueAsString(payload))
                     .build();

@@ -49,6 +49,7 @@ public class MenuService {
 
         try {
             OutboxEvent event = OutboxEvent.builder()
+                    .venueId(saved.getVenueId())
                     .eventType("MenuItemPublished")
                     .payload(objectMapper.writeValueAsString(saved))
                     .build();

@@ -110,6 +110,7 @@ public class OrderService {
     private void emitOrderItemConfirmedEvent(OrderItem item) {
         try {
             OutboxEvent event = OutboxEvent.builder()
+                    .venueId(item.getOrder().getVenueId())
                     .eventType("OrderItemConfirmed")
                     .payload(objectMapper.writeValueAsString(item))
                     .build();

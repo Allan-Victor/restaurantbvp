@@ -28,6 +28,12 @@ public class OutboxEvent {
     private UUID id;
 
     /**
+     * The venueId used for Kafka partitioning.
+     */
+    @Column(name = "venue_id", nullable = false)
+    private String venueId;
+
+    /**
      * The type of event (e.g., "OrderItemConfirmed").
      * Used by consumers to know how to handle the payload.
      */

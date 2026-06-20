@@ -4,7 +4,6 @@ import com.allan.bvp.restaurant.domain.model.OutboxEvent;
 import com.allan.bvp.restaurant.domain.repository.OutboxRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,17 +34,16 @@ import java.util.List;
 public class OutboxRelay {
 
     private final OutboxRepository outboxRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final KafkaProducerService kafkaProducerService;
 
     /**
      * This method runs periodically to find events that haven't been dispatched yet.
      * It is scheduled to run every 1 second (fixedDelay = 1000ms).
      *
-     * <p>How it works:</p>
-     * 1. Fetch undispatched events from the database.
-     * 2. For each event, publish it to the Spring ApplicationEventPublisher.
-     * 3. If publishing succeeds, mark the event as dispatched=true.
-     * 4. If publishing fails, leave it as dispatched=false so it can be retried in the next run.
+     * <p>Junior Developer Tip:</p>
+     * This is the "Relay" part of the Outbox pattern (KAF-2). It reads undispatched
+     * rows from the DB and publishes them to Kafka. We mark them as dispatched ONLY
+     * after Kafka acknowledges receipt.
      */
     @Scheduled(fixedDelay = 1000)
     @Transactional
@@ -58,17 +56,17 @@ public class OutboxRelay {
         log.debug("Found {} undispatched outbox events", events.size());
         for (OutboxEvent event : events) {
             try {
-                // Publish the event to the in-process bus
-                eventPublisher.publishEvent(event);
+                // Publish to Kafka and wait for acknowledgment (KAF-2)
+                kafkaProducerService.sendEvent(event).join();
                 
                 // Mark as dispatched
                 event.setDispatched(true);
                 outboxRepository.save(event);
                 
-                log.debug("Relayed event {} of type {}", event.getId(), event.getEventType());
+                log.debug("Relayed event {} to Kafka", event.getId());
             } catch (Exception e) {
-                log.error("Failed to relay outbox event {}", event.getId(), e);
-                // We don't mark as dispatched, so it will be retried
+                log.error("Failed to relay outbox event {} to Kafka", event.getId(), e);
+                // We don't mark as dispatched, so it will be retried in the next run
             }
         }
     }

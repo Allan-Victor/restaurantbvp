@@ -4,6 +4,8 @@ import com.allan.bvp.restaurant.domain.enums.Unit;
 import com.allan.bvp.restaurant.domain.model.*;
 import com.allan.bvp.restaurant.domain.repository.*;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -27,6 +29,9 @@ public class StockServiceConcurrencyTest {
 
     @Autowired
     private StockService stockService;
+
+    @MockitoBean
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
     private StockItemRepository stockItemRepository;
